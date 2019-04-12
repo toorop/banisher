@@ -1,0 +1,18 @@
+version: '2'
+
+tasks:
+  build:
+    cmds:
+      - go build -o bin/banala
+
+  run:
+    deps: [build]
+    cmds:
+      - bin/banala
+
+  deploy:
+    deps: [build]
+    cmds:
+      - rsync -arvz bin/banala root@mail.protecmail.com:/root/bin/
+
+
