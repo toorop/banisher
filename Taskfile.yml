@@ -13,6 +13,6 @@ tasks:
   deploy:
     deps: [build]
     cmds:
-      - rsync -arvz bin/banala root@mail.protecmail.com:/root/bin/
+      - rsync -arvz bin/* root@mail.protecmail.com:/root/bin/
 
 

@@ -48,7 +48,8 @@ func (b *Banisher) Add(ip string) {
 		log.Println("add iptable rule failed:", err)
 		return
 	}
-	b.banished[ip] = time.Now().Add(time.Duration(90) + time.Minute).Unix()
+	b.banished[ip] = time.Now().Add(time.Duration(180) * time.Minute).Unix()
+	log.Printf("%s added", ip)
 }
 
 func (b *Banisher) Remove(ip string) error {
@@ -64,7 +65,6 @@ func (b *Banisher) WatchBannishedTime() {
 	for {
 		now := time.Now().Unix()
 		for ip, ts := range b.banished {
-			log.Println(ip, ts, now)
 			if ts < now {
 				if err := b.Remove(ip); err != nil {
 					log.Printf("b.Remove(%s) failed: %s", ip, err)
@@ -76,13 +76,32 @@ func (b *Banisher) WatchBannishedTime() {
 }
 
 // parser is the ... parser
-type parser struct{}
+type parser struct {
+	rules []rule
+}
 
-// implements Write interface
-func (p parser) Write(in []byte) (l int, err error) {
-	l = len(in)
+func (p parser) Write(in []byte) (n int, err error) {
+	n = len(in)
 	entry := string(in)
 	//log.Println(entry)
+	for _, rule := range p.rules {
+		if rule.Match.Match(in) {
+			ip := rule.RegexIP.FindString(entry)
+			log.Printf("%s match %s", ip, rule.Name)
+			go banisher.Add(ip)
+			break
+		}
+	}
+	return n, nil
+}
+
+// implements Write interface
+func (p parser) WriteOld(in []byte) (l int, err error) {
+	l = len(in)
+	entry := string(in)
+	log.Println(entry)
+	ip := ipv4Regex.FindString(entry)
+	log.Println(ip)
 	// dovecot
 	if strings.Contains(entry, "imap-login:") && strings.Contains(entry, "auth failed") {
 		parts := strings.Split(entry, ",")
@@ -96,15 +115,13 @@ func (p parser) Write(in []byte) (l int, err error) {
 		}
 		go banisher.Add(jetteIP[1])
 		//
-	} else if strings.Contains(entry, "smtpd") && strings.Contains(entry, "ERROR auth") {
-		//log.Println(entry)
-		parts := strings.Split(entry, " ")
-		if len(parts) < 8 {
-			return
-		}
+	} else if strings.Contains(entry, "smtpd") && (strings.Contains(entry, "ERROR auth") || strings.Contains(entry, "-client timeout")) {
+		// time="2019-04-16T09:56:10.220728971+02:00" level=info msg="smtpd d4e055ce0a2b07c2f6989f3b5578b98eb0a84a8f-141.98.80.30:17606-client timeout"
 
-		ip := reTmail.FindString(parts[7])
-		go banisher.Add(ip)
+		ip := reTmail.FindString(entry)
+		if ip != "" {
+			go banisher.Add(ip)
+		}
 
 	}
 	return l, nil
@@ -114,16 +131,19 @@ func (p parser) Write(in []byte) (l int, err error) {
 func main() {
 	var err error
 
-	reTmail, err = regexp.Compile(`([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})`)
+	// get rules
+	rules, err := parseRules("./rule.yml")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
+	log.Println(rules)
 	banisher, err = NewBanisher()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
+	// unban IP
 	go banisher.WatchBannishedTime()
 
 	r, err := sdjournal.NewJournalReader(sdjournal.JournalReaderConfig{
@@ -138,7 +158,9 @@ func main() {
 	}
 	defer r.Close()
 
-	p := parser{}
+	p := parser{
+		rules: rules,
+	}
 
 	timeout := time.Duration(876000) * time.Hour
 
