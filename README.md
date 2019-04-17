@@ -4,7 +4,7 @@
   <img width="330" height="330" src="/etc/banisher.png">
 </p>
 
-The Banisher watch in real time your systemd journal and ban, via iptables, hosts based on yours rules.
+The Banisher watch in real time your systemd journal and ban, via iptables, hosts who match on yours rules.  
 
 Currently hosts (IP) are banished for 3 hours.
 
@@ -13,11 +13,11 @@ The Banisher keeps states of banished IPs in a key-value store ([badger](https:/
 
 ## Getting started
 
-*WARNING The Banisher works onlys with logs handled by systemd journal.*
+__WARNING The Banisher works only logs handled by systemd journal.__
 
 ### Installing
 
-Just download the lastest binary from the [releases section](https://github.com/toorop/banisher/releases)
+Just download the lastest binary from the [releases section](https://github.com/toorop/banisher/releases).
  
 ### Rules
 
@@ -25,9 +25,9 @@ In the same directory than The Banisher binary, create a [YAML](https://en.wikip
 This file will contain your Banisher rules.
 
 A rule has three poperties:
-- *name*: is the name of the rule (whaoo amazing!)
-- *match*: is a regular expression. If a log line matches this regex, The Banisher will ban IP address found in this line.
-- *IPpos*: as some log line may have multiple IP, this properties will indicate which IP to ban. *Warning*: index start at 0, so if you want to ban the first IP found (left to right) IPpso must be 0.
+- __name__: is the name of the rule (whaoo amazing!)
+- __match__: is a regular expression. If a log line matches this regex, The Banisher will ban IP address found in this line.
+- __IPpos__: as some log line may have multiple IP, this property will indicate which IP to ban. __Warning__: index start at 0, so if you want to ban the first IP found (left to right) IPpos must be 0.
 
 And... that it.
 
@@ -66,11 +66,11 @@ Here is the corresponding rule:
   IPpos: 0
 ```
 
-Yes i know it seems to be too easy to be real.
+Yes i know, it seems to too easy to be real.
 
 #### Multiple rules ?
 
-Of course you can have multiple rule in your rules.ym, you just have to not forget the `-` prepending the `name` property.
+Of course you can have multiple rules in your rules.ym, you just have to not forget the `-` prepending the `name` property for each rule.
 
 For example if you want those two rules, your `rules.yml` will be:
 
@@ -108,11 +108,11 @@ Just run:
 2019/04/17 16:19:21 ssh: 211.21.154.4 banned
 ```
 
-Of course you can configure systemd to handle banisher binay (doc is comming)
+Of course you can configure systemd to handle The Banisher binay (doc is comming)
 
 ### And what can i do if somthing goes wrong !!!
 
-An iptables rules will be automacicaly removed after 3 hours.
+An iptables rules will be automaticaly removed after 3 hours.
 
 If you made a mistake, just:
 
