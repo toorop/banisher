@@ -3,12 +3,12 @@ version: '2'
 tasks:
   build:
     cmds:
-      - go build -o dist/banala
+      - go build -o dist/banisher
 
   run:
     deps: [build]
     cmds:
-      - dist/banala
+      - dist/banisher
 
   deploy:
     deps: [build]
