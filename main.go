@@ -24,7 +24,7 @@ func main() {
 	}
 
 	// get rules
-	rules, err := parseRules(fmt.Sprintf("%s/rule.yml", home))
+	rules, err := parseRules(fmt.Sprintf("%s/rules.yml", home))
 	if err != nil {
 		log.Fatalln("failed to parse rules:", err)
 	}
