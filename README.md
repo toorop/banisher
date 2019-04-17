@@ -110,7 +110,7 @@ Just run:
 
 Of course you can configure systemd to handle The Banisher binay (doc is comming)
 
-### And what can i do if somthing goes wrong !!!
+### And what can i do if something goes wrong !!!
 
 An iptables rules will be automaticaly removed after 3 hours.
 
