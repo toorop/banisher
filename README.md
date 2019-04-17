@@ -13,7 +13,7 @@ The Banisher keeps states of banished IPs in a key-value store ([badger](https:/
 
 ## Getting started
 
-__WARNING The Banisher works only logs handled by systemd journal and is currently only available for Linux 64.__
+__WARNING The Banisher works only with logs handled by systemd journal and is currently only available for Linux 64.__
 
 ### Installing
 
