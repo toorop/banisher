@@ -1,20 +1,20 @@
 - name: tmail-timeout
   match: .*msg="smtpd.*-client timeout.*
-  regexIP: ipv4
+  IPpos: 0
 
 - name: tmail-auth-404
   match: .*msg="smtpd.*err:record not found"
-  regexIP: ipv4
+  IPpos: 0
 
 - name: tmail-auth-empty
   match: err:login or passwd is empty
-  regexIP: ipv4
+  IPpos: 0
 
 - name: dovecot
   match: .*imap-login:.*auth failed,.*
-  regexIP: ipv4
+  IPpos: 0
 
 - name: ssh
   match: Failed password.*ssh2
-  IPos: 0
+  IPpos: 0
 
