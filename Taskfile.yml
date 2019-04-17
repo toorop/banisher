@@ -3,16 +3,16 @@ version: '2'
 tasks:
   build:
     cmds:
-      - go build -o bin/banala
+      - go build -o dist/banala
 
   run:
     deps: [build]
     cmds:
-      - bin/banala
+      - dist/banala
 
   deploy:
     deps: [build]
     cmds:
-      - rsync -arvz bin/* root@mail.protecmail.com:/root/bin/
+      - rsync -arvz dist/* root@mail.protecmail.com:/root/dist/
 
 
