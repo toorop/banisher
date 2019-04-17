@@ -108,7 +108,7 @@ Just run:
 2019/04/17 16:19:21 ssh: 211.21.154.4 banned
 ```
 
-Of course you can configure systemd to handle The Banisher binay (doc is comming)
+Of course you can configure systemd to handle The Banisher binary (doc is coming)
 
 ### And what can i do if something goes wrong !!!
 
