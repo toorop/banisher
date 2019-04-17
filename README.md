@@ -4,7 +4,7 @@
   <img width="330" height="330" src="/etc/banisher.png">
 </p>
 
-The Banisher watch in real time your systemd journal and bans, via iptables, hosts who match on yours rules.  
+The Banisher watches in real time your systemd journal and bans, via iptables, hosts who match on yours rules.  
 
 Currently hosts (IP) are banished for 3 hours.
 
