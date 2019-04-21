@@ -3,20 +3,18 @@ package main
 import "log"
 
 // parser parse log line
-type parser struct {
-	rules []rule
-}
+type parser struct{}
 
 // Write implement io.Writer interface
 func (p parser) Write(in []byte) (n int, err error) {
 	n = len(in)
 	entry := string(in)
-	for _, rule := range p.rules {
+	for _, rule := range config.Rules {
 		if rule.Match.Match(in) {
 			//ip := rule.RegexIP.FindString(entry)
 			//log.Println(entry)
 			ips := ipv4Regex.FindAllString(entry, -1)
-			if len(ips) < rule.IPpos+1 {
+			if uint(len(ips)) < rule.IPpos+1 {
 				log.Printf("no ip found at position %d for %s", rule.IPpos, entry)
 				break
 			}

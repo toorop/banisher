@@ -19,10 +19,40 @@ __WARNING The Banisher works only with logs handled by systemd journal and is cu
 
 Just download the lastest binary from the [releases section](https://github.com/toorop/banisher/releases).
  
-### Rules
+### Config
+ 
+In the same directory than The Banisher binary, create a [YAML](https://en.wikipedia.org/wiki/YAML) file named `config.yml`.
 
-In the same directory than The Banisher binary, create a [YAML](https://en.wikipedia.org/wiki/YAML) file named `rules.yml`.
-This file will contain your Banisher rules.
+Here is a sample: 
+
+```yaml
+# defaut banishment duration in seconds
+defaultBanishmentDuration: 3600
+
+# whitelisted IP
+whitelist:
+  - 178.22.51.92
+  - 142.93.11.10
+
+# rules
+rules:
+  - name: dovecot
+    match: .*imap-login:.*auth failed,.*
+    IPpos: 0
+
+  - name: ssh
+    match: Failed password.*ssh2
+    IPpos: 0
+
+```
+
+Where:
+
+- __defaultBanishmentDuration__: is the period in second, during which an IP will be banned, if it matches a rule.
+
+- __whitelist__: a list of IPs that must not be banned
+
+- __rules__ :your Banisher rules.
 
 A rule has three poperties:
 - __name__: is the name of the rule (whaoo amazing!)
@@ -31,7 +61,7 @@ A rule has three poperties:
 
 And... that it.
 
-Here is some samples:
+Here is some samples of rules:
 
 ##### SSH
 
@@ -75,7 +105,6 @@ Of course you can have multiple rules in your rules.ym, you just have to not for
 For example if you want those two rules, your `rules.yml` will be:
 
 ```yaml
-
 - name: ssh
   match: Failed password.*ssh2
   IPpos: 0

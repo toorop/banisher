@@ -53,6 +53,11 @@ func (b *Banisher) Add(ip, ruleName string) {
 		return
 	}
 
+	// whitelisted
+	if config.isIPWhitelisted(ip) {
+		return
+	}
+
 	b.Lock()
 	defer b.Unlock()
 
@@ -85,7 +90,7 @@ func (b *Banisher) Add(ip, ruleName string) {
 
 	// add to badger
 	err = b.db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(ip), []byte(strconv.FormatInt(time.Now().Add(time.Duration(180)*time.Minute).Unix(), 10)))
+		return txn.Set([]byte(ip), []byte(strconv.FormatInt(time.Now().Add(time.Duration(config.DefaultBanishmentDuration)*time.Second).Unix(), 10)))
 	})
 
 	if err != nil {

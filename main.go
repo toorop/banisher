@@ -12,6 +12,7 @@ import (
 
 var banisher *Banisher
 var home string
+var config Config
 
 // main
 func main() {
@@ -23,12 +24,11 @@ func main() {
 		log.Fatalln("failed to os.Getwd():", err)
 	}
 
-	// get rules
-	rules, err := parseRules(fmt.Sprintf("%s/rules.yml", home))
+	// load config
+	config, err = loadConfig(fmt.Sprintf("%s/config.yml", home))
 	if err != nil {
-		log.Fatalln("failed to parse rules:", err)
+		log.Fatalf("failed to load config: %v", err)
 	}
-
 	// init banisher
 	banisher, err = NewBanisher()
 	if err != nil {
@@ -55,13 +55,10 @@ func main() {
 	}
 	defer r.Close()
 
-	p := parser{
-		rules: rules,
-	}
+	p := parser{}
 
-	timeout := time.Duration(876000) * time.Hour
-
-	if err = r.Follow(time.After(timeout), p); err != nil {
+	if err = r.Follow(time.After(time.Duration(876000)*time.Hour), p); err != nil {
 		log.Fatalln(err)
 	}
+
 }

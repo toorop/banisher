@@ -4,7 +4,6 @@ tasks:
   build:
     cmds:
       - go build -o dist/banisher
-
   run:
     deps: [build]
     cmds:
