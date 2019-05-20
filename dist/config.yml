@@ -27,3 +27,6 @@ rules:
     match: Failed password.*ssh2
     IPpos: 0
 
+  - name: pam_unix
+    match: pam_unix(sshd:auth):.*authentication failure;*
+    IPpos: 0
