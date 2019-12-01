@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -20,13 +19,11 @@ type Banisher struct {
 	IPT *iptables.IPTables
 }
 
-func NewBanisher() (b *Banisher, err error) {
+func NewBanisher(databaseFile string) (b *Banisher, err error) {
 	b = new(Banisher)
 
 	// badger
-	options := badger.DefaultOptions
-	options.Dir = fmt.Sprintf("%s/db.bdg", home)
-	options.ValueDir = fmt.Sprintf("%s/db.bdg", home)
+	options := badger.DefaultOptions(databaseFile)
 	options.SyncWrites = true
 	options.Logger = nil
 

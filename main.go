@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -24,13 +25,18 @@ func main() {
 		log.Fatalln("failed to os.Getwd():", err)
 	}
 
+	// load parameters
+	configFile := flag.String("conf", fmt.Sprintf("%s/config.yml", home), "configuration file")
+	databaseFile := flag.String("db", fmt.Sprintf("%s/db.bdg", home), "database file")
+	flag.Parse()
+
 	// load config
-	config, err = loadConfig(fmt.Sprintf("%s/config.yml", home))
+	config, err = loadConfig(*configFile)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 	// init banisher
-	banisher, err = NewBanisher()
+	banisher, err = NewBanisher(*databaseFile)
 	if err != nil {
 		log.Fatalln(err)
 	}
