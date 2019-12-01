@@ -51,7 +51,7 @@ func loadConfig(path string) (conf Config, err error) {
 	for _, r := range m["rules"].([]interface{}) {
 		rule2add := rule{}
 
-		rs := r.(map[interface{}]interface{})
+		rs := r.(map[string]interface{})
 
 		// name
 		if rs["name"] == nil {

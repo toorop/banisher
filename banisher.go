@@ -24,9 +24,7 @@ func NewBanisher() (b *Banisher, err error) {
 	b = new(Banisher)
 
 	// badger
-	options := badger.DefaultOptions
-	options.Dir = fmt.Sprintf("%s/db.bdg", home)
-	options.ValueDir = fmt.Sprintf("%s/db.bdg", home)
+	options := badger.DefaultOptions(fmt.Sprintf("%s/db.bdg", home))
 	options.SyncWrites = true
 	options.Logger = nil
 
