@@ -6,7 +6,7 @@
 
 The Banisher watches in real time your systemd journal and bans, via iptables, hosts who match on yours rules.  
 
-Currently hosts (IP) are banished for 3 hours.
+Currently hosts (IP) are banished for 3 hours (configurable in config.yml).
 
 The Banisher keeps states of banished IPs in a key-value store ([badger](https://github.com/dgraph-io/badger))   
 
@@ -149,3 +149,11 @@ If you made a mistake, just:
 - remove badger files, the db.bdg folder.
 - flush iptables `ìptables -F`
 - add your own iptables rules (if needed)   
+
+### Build dependencies
+
+The libsystemd0 library is needed to compile.
+
+For debian like : sudo apt install libsystemd-dev
+
+
