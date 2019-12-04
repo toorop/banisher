@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -105,8 +106,10 @@ func (b *Banisher) Add(ip, ruleName string) {
 func (b *Banisher) Remove(ip string) {
 	var err error
 	if err = b.IPT.Delete("filter", "INPUT", "-s", ip, "-j", "DROP"); err != nil {
-		log.Printf("failed to delete iptables rules for %s : %s", ip, err)
-		return
+		if !strings.Contains(err.Error(), "matching rule exist") {
+			log.Printf("failed to delete iptables rules for %s : %s", ip, err)
+			return
+		}
 	}
 	err = b.db.Update(func(txn *badger.Txn) error {
 		return txn.Delete([]byte(ip))
