@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+
+. /usr/share/debconf/confmodule
+db_version 2.0
+
+action="$1"
+oldversion="$2"
+
+umask 022
+
+
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+	if [ -d /run/systemd/system ]; then
+		systemctl --system daemon-reload >/dev/null || true
+        if ! systemctl is-enabled banisher.service >/dev/null 
+        then
+            systemctl enable banisher.service >/dev/null || true
+            systemctl start banisher.service >/dev/null || true
+        else
+            systemctl restart banisher.service >/dev/null || true
+        fi
+	fi
+fi
+
+db_stop
+
+exit 0
