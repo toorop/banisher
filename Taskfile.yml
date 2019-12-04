@@ -8,8 +8,3 @@ tasks:
     deps: [build]
     cmds:
       - dist/banisher
-
-  deploy:
-    deps: [build]
-    cmds:
-      - rsync -arvz --exclude 'db.bdg' dist/*  root@mail.protecmail.com:/root/bin/
