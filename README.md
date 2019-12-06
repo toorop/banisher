@@ -20,8 +20,15 @@ __WARNING The Banisher works only with logs handled by systemd journal and is cu
 Just download the lastest binary from the [releases section](https://github.com/toorop/banisher/releases).
  
 ### Config
- 
+
+#### Without debian package
+
 In the same directory than The Banisher binary, create a [YAML](https://en.wikipedia.org/wiki/YAML) file named `config.yml`.
+
+#### With the debian package
+
+Modify the /etc/banisher.yml file according to your needs
+
 
 Here is a sample: 
 

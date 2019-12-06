@@ -1,10 +1,41 @@
 version: '2'
 
+vars:
+    GIT_VERSION:
+      sh: git describe --tags --always | sed 's/v//g'
+
 tasks:
+
   build:
     cmds:
-      - go build -o dist/banisher
+      - go build -ldflags "-w -s -X main.appVersion={{.GIT_VERSION}}" -o dist/banisher
+
   run:
     deps: [build]
     cmds:
       - dist/banisher
+  
+  package:
+    deps: [build]
+    vars:
+      PACKAGE_BUILD_DATE:
+        sh: date +%s
+    cmds:
+      - mkdir -p dist/packages/debian/DEBIAN
+      - cp debian/postinst dist/packages/debian/DEBIAN/.
+      - cp debian/prerm dist/packages/debian/DEBIAN/.
+      - cp debian/control dist/packages/debian/DEBIAN/.
+      - sed -i 's/#version#/{{.GIT_VERSION}}-{{.PACKAGE_BUILD_DATE}}/g' dist/packages/debian/DEBIAN/control
+      - mkdir -p dist/packages/debian/lib/systemd/system
+      - cp debian/banisher.service dist/packages/debian/lib/systemd/system/.
+      - mkdir -p dist/packages/debian/usr/sbin
+      - cp dist/banisher dist/packages/debian/usr/sbin/.
+      - mkdir -p dist/packages/debian/etc
+      - cp dist/config.yml dist/packages/debian/etc/banisher.yml
+      - dpkg-deb --build dist/packages/debian dist/banisher_{{.GIT_VERSION}}-{{.PACKAGE_BUILD_DATE}}_amd64.deb
+
+  clean:
+    cmds:
+      - rm dist/*.deb
+      - rm dist/packages -R
+      - rm dist/banisher

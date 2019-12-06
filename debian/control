@@ -1,0 +1,8 @@
+Package: banisher
+Version: #version#
+Section: net
+Priority: optional
+Architecture: amd64
+Essential: no
+Maintainer: Olivier LARRIGAUDIERE
+Description: Watches your systemd journal and bans, with no delay, abusers.

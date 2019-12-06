@@ -12,3 +12,7 @@ dist/banisher
 
 # Database
 dist/db.bdg
+
+# Packages
+dist/packages
+dist/*.deb

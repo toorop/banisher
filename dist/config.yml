@@ -3,22 +3,10 @@ defaultBanishmentDuration: 3600
 
 # whitelisted IP
 whitelist:
-  - 163.172.180.201
+#  - 1.2.3.4
 
 # rules
 rules:
-  - name: tmail-timeout
-    match: .*msg="smtpd.*-client timeout.*
-    IPpos: 0
-
-  - name: tmail-auth-404
-    match: .*msg="smtpd.*err:record not found"
-    IPpos: 0
-
-  - name: tmail-auth-empty
-    match: err:login or passwd is empty
-    IPpos: 0
-
   - name: dovecot
     match: .*imap-login:.*auth failed,.*
     IPpos: 0

@@ -14,6 +14,7 @@ import (
 var banisher *Banisher
 var home string
 var config Config
+var appVersion string
 
 // main
 func main() {
@@ -28,13 +29,23 @@ func main() {
 	// load parameters
 	configFile := flag.String("conf", fmt.Sprintf("%s/config.yml", home), "configuration file")
 	databaseFile := flag.String("db", fmt.Sprintf("%s/db.bdg", home), "database file")
+	systemd := flag.Bool("systemd", false, "started by systemd")
 	flag.Parse()
+
+	// remove timestamp on log
+	if *systemd {
+		log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
+	}
+
+	// notify start of application with version
+	log.Printf("Starting The Banisher v%s", appVersion)
 
 	// load config
 	config, err = loadConfig(*configFile)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
+
 	// init banisher
 	banisher, err = NewBanisher(*databaseFile)
 	if err != nil {

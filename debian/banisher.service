@@ -1,0 +1,13 @@
+[Unit]
+Description=The Banisher daemon
+After=network.target auditd.service
+
+[Service]
+ExecStartPre=/usr/bin/install -m 755 -o root -g root -d /var/lib/banisher
+ExecStart=/usr/sbin/banisher -conf=/etc/banisher.yml -db=/var/lib/banisher/db.bdg -systemd
+KillMode=process
+Restart=on-failure
+StandardOutput=syslog
+
+[Install]
+WantedBy=multi-user.target
