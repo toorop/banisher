@@ -139,7 +139,7 @@ func (b Banisher) Restore() error {
 	return err
 }
 
-// GC remove expired bannishment
+// GC remove expired banishment
 func (b *Banisher) GC() {
 	for {
 		now := time.Now().Unix()
@@ -156,7 +156,7 @@ func (b *Banisher) GC() {
 						return err
 					}
 					if ts < now {
-						go b.Remove(string(ip))
+						b.Remove(string(ip))
 					}
 					return nil
 				})
