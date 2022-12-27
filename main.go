@@ -20,17 +20,24 @@ var appVersion string
 func main() {
 	var err error
 
+	// load parameters
+	configFile := flag.String("conf", fmt.Sprintf("%s/config.yml", home), "configuration file")
+	databaseFile := flag.String("db", fmt.Sprintf("%s/db.bdg", home), "database file")
+	systemd := flag.Bool("systemd", false, "started by systemd")
+	showVersion := flag.Bool("version", false, "show version")
+	flag.Parse()
+
+	// show version
+	if *showVersion {
+		fmt.Printf("The Banisher v%s\n", appVersion)
+		os.Exit(0)
+	}
+
 	// get home (working path)
 	home, err = filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		log.Fatalln("failed to os.Getwd():", err)
 	}
-
-	// load parameters
-	configFile := flag.String("conf", fmt.Sprintf("%s/config.yml", home), "configuration file")
-	databaseFile := flag.String("db", fmt.Sprintf("%s/db.bdg", home), "database file")
-	systemd := flag.Bool("systemd", false, "started by systemd")
-	flag.Parse()
 
 	// remove timestamp on log
 	if *systemd {
