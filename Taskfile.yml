@@ -25,6 +25,7 @@ tasks:
       - cp debian/postinst dist/packages/debian/DEBIAN/.
       - cp debian/prerm dist/packages/debian/DEBIAN/.
       - cp debian/control dist/packages/debian/DEBIAN/.
+      - cp debian/conffiles dist/packages/debian/DEBIAN/.
       - sed -i 's/#version#/{{.GIT_VERSION}}-{{.PACKAGE_BUILD_DATE}}/g' dist/packages/debian/DEBIAN/control
       - mkdir -p dist/packages/debian/lib/systemd/system
       - cp debian/banisher.service dist/packages/debian/lib/systemd/system/.
