@@ -3,6 +3,7 @@ Version: #version#
 Section: net
 Priority: optional
 Architecture: amd64
+Depends: libc6 (>= 2.28)
 Essential: no
 Maintainer: Olivier LARRIGAUDIERE
 Description: Watches your systemd journal and bans, with no delay, abusers.

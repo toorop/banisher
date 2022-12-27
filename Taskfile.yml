@@ -10,13 +10,17 @@ tasks:
     cmds:
       - go build -ldflags "-w -s -X main.appVersion={{.GIT_VERSION}}" -o dist/banisher
 
+  build-with-docker:
+    cmds:
+      - docker run --rm -v $PWD:/go/src banisher-compile:latest /bin/sh -c 'task build'
+
   run:
     deps: [build]
     cmds:
       - dist/banisher
   
   package:
-    deps: [build]
+    deps: [build-with-docker]
     vars:
       PACKAGE_BUILD_DATE:
         sh: date +%s
@@ -25,6 +29,7 @@ tasks:
       - cp debian/postinst dist/packages/debian/DEBIAN/.
       - cp debian/prerm dist/packages/debian/DEBIAN/.
       - cp debian/control dist/packages/debian/DEBIAN/.
+      - cp debian/conffiles dist/packages/debian/DEBIAN/.
       - sed -i 's/#version#/{{.GIT_VERSION}}-{{.PACKAGE_BUILD_DATE}}/g' dist/packages/debian/DEBIAN/control
       - mkdir -p dist/packages/debian/lib/systemd/system
       - cp debian/banisher.service dist/packages/debian/lib/systemd/system/.
@@ -32,7 +37,11 @@ tasks:
       - cp dist/banisher dist/packages/debian/usr/sbin/.
       - mkdir -p dist/packages/debian/etc
       - cp dist/config.yml dist/packages/debian/etc/banisher.yml
-      - dpkg-deb --build dist/packages/debian dist/banisher_{{.GIT_VERSION}}-{{.PACKAGE_BUILD_DATE}}_amd64.deb
+      - dpkg-deb --root-owner-group -Zxz --build dist/packages/debian dist/banisher_{{.GIT_VERSION}}-{{.PACKAGE_BUILD_DATE}}_amd64.deb
+
+  generate-docker-image:
+    cmds:
+      - docker build --tag banisher-compile .
 
   clean:
     cmds:
