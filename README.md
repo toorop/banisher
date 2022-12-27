@@ -6,7 +6,7 @@
 
 The Banisher watches in real time your systemd journal and bans, via iptables, hosts who match on yours rules.  
 
-Currently hosts (IP) are banished for 3 hours (configurable in config.yml).
+Currently hosts (IP) are banished for 1 hour (configurable in config.yml).
 
 The Banisher keeps states of banished IPs in a key-value store ([badger](https://github.com/dgraph-io/badger))   
 
@@ -17,18 +17,20 @@ __WARNING The Banisher works only with logs handled by systemd journal and is cu
 
 ### Installing
 
-Just download the lastest binary from the [releases section](https://github.com/toorop/banisher/releases).
- 
-### Config
-
 #### Without debian package
 
-In the same directory than The Banisher binary, create a [YAML](https://en.wikipedia.org/wiki/YAML) file named `config.yml`.
-
+1. Download the lastest binary from the [releases section](https://github.com/olarriga/banisher/releases).
+2. Set the exec flag (`chmod +x banisher`).
+3. Create a [YAML](https://en.wikipedia.org/wiki/YAML) file named `config.yml` in the same directory than The Banisher binary to define the configuration.
+4. Start The Banisher (`./banisher`).
+ 
 #### With the debian package
 
-Modify the /etc/banisher.yml file according to your needs
+1. Download the lastest debian package from the [releases section](https://github.com/olarriga/banisher/releases).
+2. Modify the /etc/banisher.yml file to define the configuration according to your needs
+3. Restart The Banisher (`systemctl restart banisher.service`).
 
+### Config
 
 Here is a sample: 
 
@@ -92,7 +94,6 @@ Log line for [Dovecot](https://www.dovecot.org/) authentification failure looks 
 
 ```text
 imap-login: Disconnected (auth failed, 1 attempts in 3 secs): user=<tobe@rnotto.be>, method=PLAIN, rip=XXX.XXX.XXX.XXX, lip=YYY.YYY.YYY.YYY, TLS: Disconnected, session=<n48ImrmGRP6xth/K>
-
 ``` 
 
 Here is the corresponding rule:
@@ -107,9 +108,9 @@ Yes i know, it seems to too easy to be real.
 
 #### Multiple rules ?
 
-Of course you can have multiple rules in your rules.ym, you just have to not forget the `-` prepending the `name` property for each rule.
+Of course you can have multiple rules in your config file, you just have to not forget the `-` prepending the `name` property for each rule.
 
-For example if you want those two rules, your `rules.yml` will be:
+For example if you want those two rules, your config file will be:
 
 ```yaml
 - name: ssh
@@ -121,46 +122,32 @@ For example if you want those two rules, your `rules.yml` will be:
   IPpos: 0
 ```  
 
-### Launch 
+## And what can i do if something goes wrong !!!
 
-You have downloaded the Banisher binary ?  
-You have set the exec flag (`chmod +x banisher`) ?  
-You have set up your rules ?
-
-Let's go !
-
-Just run:
-
-```bash
-./banisher
-2019/04/17 16:19:12 dovecot: 183.82.32.153 banned
-2019/04/17 16:19:12 ssh: 104.236.246.16 banned
-2019/04/17 16:19:13 dovecot: 178.150.194.243 banned
-2019/04/17 16:19:15 ssh: 51.77.213.181 banned
-2019/04/17 16:19:20 ssh: 193.169.39.254 banned
-2019/04/17 16:19:20 ssh: 82.200.65.218 banned
-2019/04/17 16:19:21 ssh: 178.128.84.246 banned
-2019/04/17 16:19:21 ssh: 190.145.55.89 banned
-2019/04/17 16:19:21 ssh: 211.21.154.4 banned
-```
-
-Of course you can configure systemd to handle The Banisher binary (doc is coming)
-
-### And what can i do if something goes wrong !!!
-
-An iptables rules will be automaticaly removed after 3 hours.
+An iptables rules will be automaticaly removed after defaultBanishmentDuration (defined in your config file).
 
 If you made a mistake, just:
 
 - stop The Banisher
 - remove badger files, the db.bdg folder.
-- flush iptables `ìptables -F`
+- flush iptables INPUT chain `iptables -F INPUT`
 - add your own iptables rules (if needed)   
 
-### Build dependencies
+## Build
 
-The libsystemd0 library is needed to compile.
+### Prerequisite
 
-For debian like : sudo apt install libsystemd-dev
+- [Task](https://taskfile.dev/) is used for compilation with a Docker image to handle glibc version issue to keep The Banisher compatible with debian buster (debian 10).
+- To compile without the Docker image, the libsystemd0 library is needed (for debian like: `sudo apt install libsystemd-dev`).
+- The Banisher is dynamically linked with the glibc.
+
+### Build commands
+
+- Compile The Banisher without Docker image : `task build`
+- Generate the docker image to compile The Banisher : `task generate-docker-image`
+- Compile The Banisher with Docker image : `task build-with-docker`
+- Generate debian package : `task package`
+
+The binaries will be in the "dist" folder.
 
 
