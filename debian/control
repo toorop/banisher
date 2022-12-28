@@ -3,7 +3,9 @@ Version: #version#
 Section: net
 Priority: optional
 Architecture: amd64
-Depends: libc6 (>= 2.28)
+Depends: libc6 (>= 2.28), iptables
+Suggests: ipset
 Essential: no
 Maintainer: Olivier LARRIGAUDIERE
 Description: Watches your systemd journal and bans, with no delay, abusers.
+Homepage: https://github.com/olarriga/banisher

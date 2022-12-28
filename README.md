@@ -4,7 +4,7 @@
   <img width="330" height="330" src="/etc/banisher.png">
 </p>
 
-The Banisher watches in real time your systemd journal and bans, via iptables, hosts who match on yours rules.  
+The Banisher watches in real time your systemd journal and bans, via ipset and iptables, hosts who match on yours rules.  
 
 Currently hosts (IP) are banished for 1 hour (configurable in config.yml).
 
@@ -28,7 +28,7 @@ __WARNING The Banisher works only with logs handled by systemd journal and is cu
 
 1. Download the lastest debian package from the [releases section](https://github.com/olarriga/banisher/releases).
 2. Modify the /etc/banisher.yml file to define the configuration according to your needs
-3. Restart The Banisher (`systemctl restart banisher.service`).
+3. Restart The Banisher (`systemctl restart banisher`).
 
 ### Config
 
@@ -122,7 +122,7 @@ For example if you want those two rules, your config file will be:
   IPpos: 0
 ```  
 
-## And what can i do if something goes wrong !!!
+## And what can i do if something goes wrong ?
 
 An iptables rules will be automaticaly removed after defaultBanishmentDuration (defined in your config file).
 
@@ -137,7 +137,7 @@ If you made a mistake, just:
 
 ### Prerequisite
 
-- [Task](https://taskfile.dev/) is used for compilation with a Docker image to handle glibc version issue to keep The Banisher compatible with debian buster (debian 10).
+- [Task](https://taskfile.dev/) is used for compilation with a Docker image to handle glibc version issue to keep The Banisher compatible with debian buster and bullseye (debian 10 and 11).
 - To compile without the Docker image, the libsystemd0 library is needed (for debian like: `sudo apt install libsystemd-dev`).
 - The Banisher is dynamically linked with the glibc.
 

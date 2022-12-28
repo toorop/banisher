@@ -4,7 +4,7 @@ After=network.target auditd.service
 
 [Service]
 ExecStartPre=/usr/bin/install -m 755 -o root -g root -d /var/lib/banisher
-ExecStart=/usr/sbin/banisher -conf=/etc/banisher.yml -db=/var/lib/banisher/db.bdg -systemd
+ExecStart=/usr/sbin/banisher -conf=/etc/banisher.yml -db=:memory: -systemd
 KillMode=process
 Restart=on-failure
 StandardOutput=syslog

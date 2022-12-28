@@ -4,14 +4,15 @@ import (
 	"log"
 	"net"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/dgraph-io/badger"
-
 	"github.com/coreos/go-iptables/iptables"
+	badger "github.com/dgraph-io/badger/v3"
+	"github.com/nadoo/ipset"
 )
+
+const ipsetName = "banisher"
 
 // Banisher is THE banisher
 type Banisher struct {
@@ -23,11 +24,17 @@ type Banisher struct {
 func NewBanisher(databaseFile string) (b *Banisher, err error) {
 	b = new(Banisher)
 
-	// badger
-	options := badger.DefaultOptions(databaseFile)
-	options.SyncWrites = true
+	// badger options
+	var options badger.Options
+	if databaseFile == ":memory:" {
+		options = badger.DefaultOptions("").WithInMemory(true)
+	} else {
+		options = badger.DefaultOptions(databaseFile)
+		options.SyncWrites = true
+	}
 	options.Logger = nil
 
+	// open badger database
 	b.db, err = badger.Open(options)
 	if err != nil {
 		return nil, err
@@ -38,6 +45,12 @@ func NewBanisher(databaseFile string) (b *Banisher, err error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// ipset binding
+	if err = ipset.Init(); err != nil {
+		return nil, err
+	}
+
 	return
 }
 
@@ -80,9 +93,9 @@ func (b *Banisher) Add(ip, ruleName string) {
 		return
 	}
 
-	// iptables
-	if err = b.IPT.AppendUnique("filter", "INPUT", "-s", ip, "-j", "DROP"); err != nil {
-		log.Println("failed to ad iptable rule:", err)
+	// ipset
+	if err = b.filterIP(ip); err != nil {
+		log.Println("failed to add an entry to ipset:", err)
 		return
 	}
 
@@ -93,9 +106,9 @@ func (b *Banisher) Add(ip, ruleName string) {
 
 	if err != nil {
 		log.Printf("failed to add %s in db: %s", ip, err)
-		// remove from iptables
-		if err = b.IPT.Delete("filter", "INPUT", "-s", ip, "-j", "DROP"); err != nil {
-			log.Printf("failed to remove %s from iptables: %s", ip, err)
+		// remove from ipset
+		if err = b.unFilterIP(ip); err != nil {
+			log.Printf("failed to remove %s from ipset: %s", ip, err)
 		}
 		return
 	}
@@ -105,11 +118,9 @@ func (b *Banisher) Add(ip, ruleName string) {
 // Remove unban an IP
 func (b *Banisher) Remove(ip string) {
 	var err error
-	if err = b.IPT.Delete("filter", "INPUT", "-s", ip, "-j", "DROP"); err != nil {
-		if !strings.Contains(err.Error(), "matching rule exist") {
-			log.Printf("failed to delete iptables rules for %s : %s", ip, err)
-			return
-		}
+	if err = b.unFilterIP(ip); err != nil {
+		log.Printf("failed to remove %s from ipset: %s", ip, err)
+		return
 	}
 	err = b.db.Update(func(txn *badger.Txn) error {
 		return txn.Delete([]byte(ip))
@@ -122,21 +133,46 @@ func (b *Banisher) Remove(ip string) {
 }
 
 // Restore restore iptables rules from DB
-func (b Banisher) Restore() error {
-	err := b.db.View(func(txn *badger.Txn) error {
-		opts := badger.DefaultIteratorOptions
-		opts.PrefetchSize = 20
-		it := txn.NewIterator(opts)
-		defer it.Close()
-		for it.Rewind(); it.Valid(); it.Next() {
-			ip := it.Item().Key()
-			if err := b.IPT.AppendUnique("filter", "INPUT", "-s", string(ip), "-j", "DROP"); err != nil {
-				return err
-			}
+func (b *Banisher) Restore() error {
+
+	// create an empty ipset for The Banisher
+	ipset.Destroy(ipsetName)
+	if err := ipset.Create(ipsetName); err != nil {
+		return err
+	}
+	if err := ipset.Flush(ipsetName); err != nil {
+		return err
+	}
+
+	// create the iptable rule if it does not exist
+	exists, err := b.IPT.Exists("filter", "INPUT", "-m", "set", "--match-set", ipsetName, "src", "-j", "DROP")
+	if err != nil {
+		return err
+	}
+	if !exists {
+		if err := b.IPT.Insert("filter", "INPUT", 1, "-m", "set", "--match-set", ipsetName, "src", "-j", "DROP"); err != nil {
+			return err
 		}
+	}
+
+	if !b.db.Opts().InMemory {
+		err := b.db.View(func(txn *badger.Txn) error {
+			opts := badger.DefaultIteratorOptions
+			opts.PrefetchSize = 20
+			it := txn.NewIterator(opts)
+			defer it.Close()
+			for it.Rewind(); it.Valid(); it.Next() {
+				ip := it.Item().Key()
+				if err := b.filterIP(string(ip)); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+		return err
+	} else {
 		return nil
-	})
-	return err
+	}
 }
 
 // GC remove expired banishment
@@ -171,4 +207,28 @@ func (b *Banisher) GC() {
 		}
 		time.Sleep(time.Duration(5) * time.Minute)
 	}
+}
+
+func (b *Banisher) Clear() error {
+
+	// remove iptable rule
+	if err := b.IPT.Delete("filter", "INPUT", "-m", "set", "--match-set", ipsetName, "src", "-j", "DROP"); err != nil {
+		return err
+	}
+
+	// clear and remove ipset
+	if err := ipset.Flush(ipsetName); err != nil {
+		return err
+	}
+	ipset.Destroy(ipsetName)
+
+	return nil
+}
+
+func (b *Banisher) filterIP(ip string) error {
+	return ipset.Add(ipsetName, ip)
+}
+
+func (b *Banisher) unFilterIP(ip string) error {
+	return ipset.Del(ipsetName, ip)
 }
