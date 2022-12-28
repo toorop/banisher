@@ -38,6 +38,11 @@ func main() {
 		os.Exit(0)
 	}
 
+	// check if root privileges
+	if !isRoot() {
+		log.Fatalln("root privileges are required")
+	}
+
 	// remove timestamp on log
 	if *systemd {
 		log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
