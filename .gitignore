@@ -7,12 +7,9 @@
 # IntelliJ IDEA
 .idea/*
 
-# Program binary
-dist/banisher
+# Program binaries and database
+dist/*
+!dist/config.yml
 
-# Database
-dist/db.bdg
-
-# Packages
-dist/packages
-dist/*.deb
+# Vendor folder
+vendor/
