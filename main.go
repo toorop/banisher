@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/coreos/go-systemd/sdjournal"
@@ -22,7 +24,7 @@ func main() {
 	// get home (working path)
 	home, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		log.Fatalln("failed to os.Getwd():", err)
+		log.Fatalln("failed to get home:", err)
 	}
 
 	// load parameters
@@ -36,6 +38,11 @@ func main() {
 	if *showVersion {
 		fmt.Printf("The Banisher v%s\n", appVersion)
 		os.Exit(0)
+	}
+
+	// check if root privileges
+	if !isRoot() {
+		log.Fatalln("root privileges are required")
 	}
 
 	// remove timestamp on log
@@ -80,8 +87,27 @@ func main() {
 
 	p := parser{}
 
-	if err = r.Follow(time.After(time.Duration(876000)*time.Hour), p); err != nil {
+	// follow the journalreader
+	timeChan := make(chan time.Time, 1)
+	go r.Follow(timeChan, p)
+
+	// this handles killing the application gracefully
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func(wg *sync.WaitGroup) {
+		<-c
+		log.Println("Exiting The Banisher")
+		wg.Done()
+	}(wg)
+	wg.Wait() //wait till we hear an interrupt
+
+	// end follow of the journalreader
+	timeChan <- time.Now()
+
+	// clear filter rules
+	if err = banisher.Clear(); err != nil {
 		log.Fatalln(err)
 	}
-
 }
