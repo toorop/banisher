@@ -22,7 +22,7 @@ func main() {
 	// get home (working path)
 	home, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		log.Fatalln("failed to os.Getwd():", err)
+		log.Fatalln("failed to get home:", err)
 	}
 
 	// load parameters
