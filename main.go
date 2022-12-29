@@ -12,13 +12,18 @@ import (
 )
 
 var banisher *Banisher
-var home string
 var config Config
 var appVersion string
 
 // main
 func main() {
 	var err error
+
+	// get home (working path)
+	home, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatalln("failed to os.Getwd():", err)
+	}
 
 	// load parameters
 	configFile := flag.String("conf", fmt.Sprintf("%s/config.yml", home), "configuration file")
@@ -31,12 +36,6 @@ func main() {
 	if *showVersion {
 		fmt.Printf("The Banisher v%s\n", appVersion)
 		os.Exit(0)
-	}
-
-	// get home (working path)
-	home, err = filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		log.Fatalln("failed to os.Getwd():", err)
 	}
 
 	// remove timestamp on log
